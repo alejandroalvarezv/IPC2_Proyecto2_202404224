@@ -1,0 +1,27 @@
+@model ListaEnlazada<Dron>
+
+<h2>Gestión de Drones</h2>
+
+<form asp-action="CargarXML" method="post" enctype="multipart/form-data">
+    <input type="file" name="archivo" />
+    <button type="submit" class="btn btn-primary">Cargar Configuración</button>
+</form>
+
+<hr />
+
+<h3>Listado de Drones Registrados</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre del Dron</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Model.GetConteo(); i++)
+        {
+            <tr>
+                <td>@Model.Obtener(i).Nombre</td>
+            </tr>
+        }
+    </tbody>
+</table>

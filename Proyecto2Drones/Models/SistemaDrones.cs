@@ -1,3 +1,5 @@
+namespace Proyecto2Drones.Models
+{
 public class SistemaDrones
 {
     public string Nombre { get; set; }
@@ -25,4 +27,5 @@ public class ConfiguracionDron
         NombreDron = nombre;
         ListadoAlturas = new ListaEnlazada<ContenidoAltura>();
     }
+}
 }

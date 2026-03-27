@@ -1,3 +1,5 @@
+namespace Proyecto2Drones.Models
+{
 public class ContenidoAltura
 {
     public int ValorAltura { get; set; }
@@ -8,4 +10,6 @@ public class ContenidoAltura
         ValorAltura = altura;
         Letra = letra;
     }
+
+}
 }
