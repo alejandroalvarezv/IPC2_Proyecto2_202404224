@@ -1,0 +1,108 @@
+<config>
+<listaDrones>
+<dron>DronDelAux</dron>
+<dron>DronVolador</dron>
+<dron>DronSinBateria</dron>
+</listaDrones>
+<listaSistemasDrones>
+<sistemaDrones nombre="SISALE">
+<alturaMaxima>8</alturaMaxima>
+<cantidadDrones>3</cantidadDrones>
+<contenido>
+<dron>DronDelAux</dron>
+<alturas>
+<altura valor="1">S</altura>
+<altura valor="2">E</altura>
+<altura valor="3">H</altura>
+<altura valor="4">K</altura>
+<altura valor="5">N</altura>
+<altura valor="6">M</altura>
+<altura valor="7">?</altura>
+<altura valor="8"> </altura>
+</alturas>
+</contenido>
+<contenido>
+<dron>DronVolador</dron>
+<alturas>
+<altura valor="1">I</altura>
+<altura valor="2">F</altura>
+<altura valor="3">I</altura>
+<altura valor="4">L</altura>
+<altura valor="5">A</altura>
+<altura valor="6">Q</altura>
+<altura valor="7">U</altura>
+<altura valor="8">X</altura>
+</alturas>
+</contenido>
+<contenido>
+<dron>DronSinBateria</dron>
+<alturas>
+<altura valor="1">S</altura>
+<altura valor="2">G</altura>
+<altura valor="3">A</altura>
+<altura valor="4">L</altura>
+<altura valor="5">E</altura>
+<altura valor="6">R</altura>
+<altura valor="7">V</altura>
+<altura valor="8">Y</altura>
+</alturas>
+</contenido>
+</sistemaDrones>
+<sistemaDrones nombre="SAWX">
+<alturaMaxima>7</alturaMaxima>
+<cantidadDrones>2</cantidadDrones>
+<contenido>
+<dron>DronDelAux</dron>
+<alturas>
+<altura valor="1">C</altura>
+<altura valor="2">O</altura>
+<altura valor="3">B</altura>
+<altura valor="4">R</altura>
+<altura valor="5">A</altura>
+<altura valor="6"> </altura>
+<altura valor="7">?</altura>
+</alturas>
+</contenido>
+<contenido>
+<dron>DronVolador</dron>
+<alturas>
+<altura valor="1">2</altura>
+<altura valor="2">C</altura>
+<altura valor="3">K</altura>
+<altura valor="4">A</altura>
+<altura valor="5">I</altura>
+<altura valor="6">A</altura>
+<altura valor="7">I</altura>
+</alturas>
+</contenido>
+</sistemaDrones>
+</listaSistemasDrones>
+<listaMensajes>
+<Mensaje nombre="MensajeMotivador">
+<sistemaDrones>SISALE</sistemaDrones>
+<instrucciones>
+<instruccion dron="DronDelAux">1</instruccion>
+<instruccion dron="DronVolador">1</instruccion>
+<instruccion dron="DronSinBateria">1</instruccion>
+<instruccion dron="DronVolador">5</instruccion>
+<instruccion dron="DronSinBateria">4</instruccion>
+<instruccion dron="DronSinBateria">5</instruccion>
+<instruccion dron="DronDelAux">7</instruccion>
+</instrucciones>
+</Mensaje>
+<Mensaje nombre="ApodoDelAux">
+<sistemaDrones>SAWX</sistemaDrones>
+<instrucciones>
+<instruccion dron="DronDelAux">1</instruccion>
+<instruccion dron="DronDelAux">2</instruccion>
+<instruccion dron="DronDelAux">3</instruccion>
+<instruccion dron="DronDelAux">4</instruccion>
+<instruccion dron="DronDelAux">5</instruccion>
+<instruccion dron="DronDelAux">6</instruccion>
+<instruccion dron="DronVolador">3</instruccion>
+<instruccion dron="DronVolador">4</instruccion>
+<instruccion dron="DronVolador">5</instruccion>
+</instrucciones>
+</Mensaje>
+</listaMensajes>
+</config>

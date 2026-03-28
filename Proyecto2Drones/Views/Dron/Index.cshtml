@@ -1,27 +1,167 @@
-@model ListaEnlazada<Dron>
+@model Proyecto2Drones.Models.LectorXML
 
-<h2>Gestión de Drones</h2>
+@{
+    ViewData["Title"] = "Gestión de Drones";
+}
 
-<form asp-action="CargarXML" method="post" enctype="multipart/form-data">
-    <input type="file" name="archivo" />
-    <button type="submit" class="btn btn-primary">Cargar Configuración</button>
-</form>
+<div class="container mt-5">
+    @* --- ENCABEZADO --- *@
+    <div class="text-center mb-5 p-4 bg-light rounded shadow-sm">
+        <h1 class="display-4 text-primary"><i class="bi bi-cpu"></i> Panel de Control de Drones</h1>
+        <p class="lead text-secondary">Carga configuraciones XML y gestiona la flota de drones</p>
+    </div>
 
-<hr />
+    @* --- FORMULARIO DE CARGA --- *@
+    <div class="card border-0 shadow-sm mb-5">
+        <div class="card-body p-4">
+            <h5 class="card-title mb-4 fw-bold">Subir Configuración XML</h5>
+            <form asp-action="CargarXML" method="post" enctype="multipart/form-data" class="row g-3">
+                <div class="col-md-8">
+                    <input type="file" name="archivo" class="form-control form-control-lg" accept=".xml" required />
+                </div>
+                <div class="col-md-4 d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg shadow">
+                        <i class="bi bi-cloud-arrow-up"></i> Cargar Datos
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-<h3>Listado de Drones Registrados</h3>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Nombre del Dron</th>
-        </tr>
-    </thead>
-    <tbody>
-        @for (int i = 0; i < Model.GetConteo(); i++)
-        {
-            <tr>
-                <td>@Model.Obtener(i).Nombre</td>
-            </tr>
-        }
-    </tbody>
-</table>
+    @* --- TABLA DE DRONES --- *@
+    <div class="card border-0 shadow-sm mb-5">
+        <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+            <h3 class="fw-bold"><i class="bi bi-list-check"></i> Drones Registrados</h3>
+        </div>
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 10%;">#</th>
+                            <th>Nombre del Dron</th>
+                            <th class="text-end">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.listaDronesGlobal != null && Model.listaDronesGlobal.GetConteo() > 0)
+                        {
+                            for (int i = 0; i < Model.listaDronesGlobal.GetConteo(); i++)
+                            {
+                                var dron = Model.listaDronesGlobal.Obtener(i);
+                                if (dron != null)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">@(i + 1)</td>
+                                        <td>@dron.Nombre</td>
+                                        <td class="text-end"><span class="badge bg-success rounded-pill">Activo</span></td>
+                                    </tr>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-5">No hay drones cargados.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    @* --- TABLA DE SISTEMAS --- *@
+    <div class="card border-0 shadow-sm mb-5">
+        <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+            <h3 class="fw-bold text-success"><i class="bi bi-gear-wide-connected"></i> Sistemas Configurados</h3>
+        </div>
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nombre del Sistema</th>
+                            <th>Altura Máxima</th>
+                            <th>Drones</th>
+                            <th class="text-center">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.listaSistemasDrones != null && Model.listaSistemasDrones.GetConteo() > 0)
+                        {
+                            for (int i = 0; i < Model.listaSistemasDrones.GetConteo(); i++)
+                            {
+                                var sistema = Model.listaSistemasDrones.Obtener(i);
+                                if (sistema != null)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">@sistema.Nombre</td>
+                                        <td><span class="badge bg-info text-dark">@sistema.AlturaMaxima m</span></td>
+                                        <td>@sistema.CantidadDrones drones</td>
+                                        <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Ok</td>
+                                    </tr>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No hay sistemas.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    @* --- DETALLE DE LETRAS POR ALTURA --- *@
+    @if (Model != null && Model.listaSistemasDrones != null && Model.listaSistemasDrones.GetConteo() > 0)
+    {
+        <div class="mt-5 pb-5">
+            <h3 class="fw-bold text-dark mb-4"><i class="bi bi-info-circle"></i> Detalle de Letras por Altura</h3>
+            <hr class="mb-5">
+            
+            @for (int i = 0; i < Model.listaSistemasDrones.GetConteo(); i++)
+            {
+                var sistema = Model.listaSistemasDrones.Obtener(i);
+                if (sistema != null)
+                {
+                    <div class="mb-5 p-4 border rounded bg-white shadow-sm">
+                        <h4 class="text-primary fw-bold mb-4">Sistema: @sistema.Nombre</h4>
+                        <div class="row">
+                            @for (int j = 0; j < sistema.DronesConfigurados.GetConteo(); j++)
+                            {
+                                var config = sistema.DronesConfigurados.Obtener(j);
+                                if (config != null)
+                                {
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card h-100 border-secondary">
+                                            <div class="card-header bg-secondary text-white">
+                                                <i class="bi bi-airplane"></i> @config.NombreDron
+                                            </div>
+                                            <ul class="list-group list-group-flush">
+                                                @for (int k = 0; k < config.ListadoAlturas.GetConteo(); k++)
+                                                {
+                                                    var alt = config.ListadoAlturas.Obtener(k);
+                                                    if (alt != null)
+                                                    {
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                            <span>Altura @alt.ValorAltura</span>
+                                                            <span class="badge bg-primary rounded-pill">@alt.Letra</span>
+                                                        </li>
+                                                    }
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    }
+</div>

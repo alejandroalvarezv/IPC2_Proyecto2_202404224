@@ -11,7 +11,7 @@ namespace Proyecto2Drones.Controllers
         public IActionResult Index()
         {
             _lector.listaDronesGlobal.OrdenarDrones();
-            return View(_lector.listaDronesGlobal);
+            return View(_lector);
         }
 
         [HttpPost]
