@@ -6,19 +6,35 @@ namespace Proyecto2Drones.Controllers;
 
 public class HomeController : Controller
 {
+    private static LectorXML modeloGlobal = new LectorXML();
+
     public IActionResult Index()
     {
-        return View();
+        return View(modeloGlobal);
     }
 
-    public IActionResult Privacy()
+    [HttpPost]
+    public IActionResult CargarXML(IFormFile archivo)
     {
-        return View();
+        if (archivo != null && archivo.Length > 0)
+        {
+            try
+            {
+                modeloGlobal = new LectorXML();
+
+                using (var reader = new StreamReader(archivo.OpenReadStream()))
+                {
+                    string contenidoXml = reader.ReadToEnd();
+                    modeloGlobal.CargarDesdeTexto(contenidoXml);
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Error al procesar: " + ex.Message;
+            }
+        }
+        return View("Index", modeloGlobal);
     }
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-    }
+    public IActionResult Privacy() => View();
 }

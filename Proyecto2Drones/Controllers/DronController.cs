@@ -1,32 +1,47 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using System.IO;
-using Proyecto2Drones.Models; 
+using Proyecto2Drones.Models;
+using System.IO; 
 
-namespace Proyecto2Drones.Controllers 
+namespace Proyecto2Drones.Controllers;
+
+public class DronController : Controller
 {
-    public class DronController : Controller
+    private static LectorXML modeloGlobal = new LectorXML();
+
+    public IActionResult Index()
     {
-        private static LectorXML _lector = new LectorXML();
+        return View(modeloGlobal);
+    }
 
-        public IActionResult Index()
+    [HttpPost]
+public IActionResult CargarXML(IFormFile archivo)
+{
+    if (archivo != null && archivo.Length > 0)
+    {
+        try 
         {
-            _lector.listaDronesGlobal.OrdenarDrones();
-            return View(_lector);
-        }
-
-        [HttpPost]
-        public IActionResult CargarXML(IFormFile archivo)
-        {
-            if (archivo != null && archivo.Length > 0)
+            using (var reader = new StreamReader(archivo.OpenReadStream()))
             {
-                var path = Path.GetTempFileName();
-                using (var stream = System.IO.File.Create(path))
-                {
-                    archivo.CopyTo(stream);
-                }
-                _lector.CargarArchivo(path); 
+                string contenidoXml = reader.ReadToEnd();
+                
+                contenidoXml = contenidoXml.Trim();
+                int firstTag = contenidoXml.IndexOf('<');
+                if (firstTag >= 0) contenidoXml = contenidoXml.Substring(firstTag);
+
+                modeloGlobal = new LectorXML(); 
+                modeloGlobal.CargarDesdeTexto(contenidoXml);
+
+
+                modeloGlobal.ProcesarMensajes(); 
             }
-            return RedirectToAction("Index");
+        }
+        catch (Exception ex)
+        {
+            ViewBag.Error = "Error: " + ex.Message;
         }
     }
+    
+    return View("Index", modeloGlobal); 
+}
 }
