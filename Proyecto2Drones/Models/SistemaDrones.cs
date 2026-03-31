@@ -6,7 +6,6 @@ namespace Proyecto2Drones.Models
         public int AlturaMaxima { get; set; } 
         public int CantidadDrones { get; set; } 
         
-        // Debe tener get y set para que el Lector pueda leerlo
         public ListaEnlazada<ConfiguracionDron> DronesConfigurados { get; set; } = new ListaEnlazada<ConfiguracionDron>();
 
         public SistemaDrones(string nombre, int alturaMax, int cantidad)

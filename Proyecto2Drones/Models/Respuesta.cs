@@ -1,8 +1,5 @@
-using System;
-
 namespace Proyecto2Drones.Models
 {
-    // Representa lo que hace UN dron en UN segundo específico
     public class InstruccionDron
     {
         public string NombreDron { get; set; }
@@ -11,11 +8,10 @@ namespace Proyecto2Drones.Models
         public InstruccionDron(string nombre, string accion)
         {
             NombreDron = nombre;
-            Accion = accion;
+            Accion     = accion;
         }
     }
 
-    // Representa un segundo de tiempo con todos los drones actuando
     public class PasoTiempo
     {
         public int Segundo { get; set; }
@@ -27,15 +23,21 @@ namespace Proyecto2Drones.Models
         }
     }
 
-    // El resultado final de procesar un mensaje completo
     public class RespuestaMensaje
     {
-        public string NombreMensaje { get; set; }
+        public string NombreMensaje  { get; set; }
+        public string NombreSistema  { get; set; }  // sistema de drones utilizado
+        public int    TiempoOptimo   { get; set; }  // tiempo total en segundos
+        public string MensajeDecoded { get; set; }  // texto decodificado
+
         public ListaEnlazada<PasoTiempo> Pasos { get; set; } = new ListaEnlazada<PasoTiempo>();
 
         public RespuestaMensaje(string nombre)
         {
-            NombreMensaje = nombre;
+            NombreMensaje  = nombre;
+            NombreSistema  = "";
+            TiempoOptimo   = 0;
+            MensajeDecoded = "";
         }
     }
 }

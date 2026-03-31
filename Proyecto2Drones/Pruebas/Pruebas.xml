@@ -2,69 +2,53 @@
 <config>
 
     <listaDrones>
-        <dron>DronFuego</dron>
-        <dron>DronHumo</dron>
-        <dron>DronVapor</dron>
+        <dron>DronRojo</dron>
+        <dron>DronAzul</dron>
+        <dron>DronVerde</dron>
     </listaDrones>
 
     <listaSistemasDrones>
-        <sistemaDrones nombre="SistemaRestaurante">
-        <alturaMaxima>8</alturaMaxima>
+        <sistemaDrones nombre="SistemaComida">
+        <alturaMaxima>4</alturaMaxima>
         <cantidadDrones>3</cantidadDrones>
         <contenido>
-            <dron>DronFuego</dron>
+            <dron>DronRojo</dron>
             <alturas>
             <altura valor="1">A</altura>
-            <altura valor="2">C</altura>
-            <altura valor="3">E</altura>
-            <altura valor="4">I</altura>
-            <altura valor="5">L</altura>
-            <altura valor="6">O</altura>
-            <altura valor="7">R</altura>
-            <altura valor="8">T</altura>
+            <altura valor="2">E</altura>
+            <altura valor="3">S</altura>
+            <altura valor="4">O</altura>
             </alturas>
         </contenido>
         <contenido>
-            <dron>DronHumo</dron>
+            <dron>DronAzul</dron>
             <alturas>
             <altura valor="1">B</altura>
-            <altura valor="2">D</altura>
-            <altura valor="3">F</altura>
-            <altura valor="4">G</altura>
-            <altura valor="5">L</altura>
-            <altura valor="6">N</altura>
-            <altura valor="7">P</altura>
-            <altura valor="8">U</altura>
+            <altura valor="2">O</altura>
+            <altura valor="3">P</altura>
+            <altura valor="4">N</altura>
             </alturas>
         </contenido>
         <contenido>
-            <dron>DronVapor</dron>
+            <dron>DronVerde</dron>
             <alturas>
-            <altura valor="1">A</altura>
-            <altura valor="2">H</altura>
-            <altura valor="3">J</altura>
-            <altura valor="4">K</altura>
-            <altura valor="5">M</altura>
-            <altura valor="6">Q</altura>
-            <altura valor="7">S</altura>
-            <altura valor="8">Z</altura>
+            <altura valor="1">C</altura>
+            <altura valor="2">D</altura>
+            <altura valor="3">U</altura>
+            <altura valor="4">A</altura>
             </alturas>
         </contenido>
         </sistemaDrones>
     </listaSistemasDrones>
 
     <listaMensajes>
-        <Mensaje nombre="MensajeTortilla">
-        <sistemaDrones>SistemaRestaurante</sistemaDrones>
+        <Mensaje nombre="MensajeSopa">
+        <sistemaDrones>SistemaComida</sistemaDrones>
         <instrucciones>
-            <instruccion dron="DronFuego">8</instruccion>
-            <instruccion dron="DronFuego">6</instruccion>
-            <instruccion dron="DronFuego">7</instruccion>
-            <instruccion dron="DronFuego">8</instruccion>
-            <instruccion dron="DronFuego">4</instruccion>
-            <instruccion dron="DronFuego">5</instruccion>
-            <instruccion dron="DronHumo">5</instruccion>
-            <instruccion dron="DronVapor">1</instruccion>
+            <instruccion dron="DronRojo">3</instruccion>
+            <instruccion dron="DronAzul">2</instruccion>
+            <instruccion dron="DronAzul">3</instruccion>
+            <instruccion dron="DronVerde">4</instruccion>
         </instrucciones>
         </Mensaje>
     </listaMensajes>
