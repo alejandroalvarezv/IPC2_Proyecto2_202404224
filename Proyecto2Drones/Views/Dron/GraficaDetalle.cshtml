@@ -1,0 +1,35 @@
+@{
+    ViewData["Title"] = "Visualización de Gráfica";
+}
+
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">@ViewBag.NombreMensaje</h4>
+            <a asp-action="Index" class="btn btn-outline-light btn-sm">Regresar al Panel</a>
+        </div>
+        <div class="card-body text-center p-5">
+            @if (ViewBag.UrlGrafica != null)
+            {
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle"></i>Grafica
+                </div>
+                
+                @* Aquí es donde se muestra la imagen generada por QuickChart *@
+                <img src="@ViewBag.UrlGrafica" class="img-fluid border shadow-sm" alt="Gráfica de Sistemas" />
+                
+                <div class="mt-4">
+                    <a href="@ViewBag.UrlGrafica" target="_blank" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-up-right"></i> Abrir en pantalla completa
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    No se pudo generar la gráfica. Asegúrate de haber cargado datos en el sistema.
+                </div>
+            }
+        </div>
+    </div>
+</div>

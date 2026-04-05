@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Xml;
+using System.Text; 
 
 namespace Proyecto2Drones.Models
 {
@@ -11,16 +11,25 @@ namespace Proyecto2Drones.Models
         public ListaMensajes listaMensajesAProcesar { get; set; } = new ListaMensajes();
         public ListaEnlazada<RespuestaMensaje> listaResultados { get; set; } = new ListaEnlazada<RespuestaMensaje>();
 
+        // Método auxiliar para evitar usar Dictionary nativo (Restricción TDA)
+        private int BuscarIndiceDron(SistemaDrones sistema, string nombreDron)
+        {
+            for (int i = 0; i < sistema.DronesConfigurados.GetConteo(); i++)
+            {
+                if (sistema.DronesConfigurados.Obtener(i).NombreDron.Trim().Equals(nombreDron.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
         public void CargarDesdeTexto(string xmlPuro)
         {
             try
             {
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(xmlPuro);
-
-                listaDronesGlobal = new ListaEnlazada<Dron>();
-                listaSistemasDrones = new ListaEnlazada<SistemaDrones>();
-                listaMensajesAProcesar = new ListaMensajes();
 
                 XmlNodeList drones = doc.GetElementsByTagName("dron");
                 foreach (XmlNode nodo in drones)
@@ -74,6 +83,17 @@ namespace Proyecto2Drones.Models
                     }
                     listaMensajesAProcesar.Insertar(nuevoMsj);
                 }
+
+                listaDronesGlobal.OrdenarDrones();
+
+                for (int i = 0; i < listaSistemasDrones.GetConteo(); i++)
+                {
+                    var sistema = listaSistemasDrones.Obtener(i);
+                    if (sistema != null && sistema.DronesConfigurados != null)
+                    {
+                        sistema.DronesConfigurados.OrdenarDrones();
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -88,13 +108,12 @@ namespace Proyecto2Drones.Models
             for (int msgIdx = 0; msgIdx < listaMensajesAProcesar.GetConteo(); msgIdx++)
             {
                 Mensaje msj = listaMensajesAProcesar.Obtener(msgIdx);
-
                 SistemaDrones sistemaActual = null;
+
                 for (int s = 0; s < listaSistemasDrones.GetConteo(); s++)
                 {
                     SistemaDrones candidato = listaSistemasDrones.Obtener(s);
-                    if (candidato.Nombre.Trim().Equals(msj.SistemaDrones.Trim(),
-                            StringComparison.OrdinalIgnoreCase))
+                    if (candidato.Nombre.Trim().Equals(msj.SistemaDrones.Trim(), StringComparison.OrdinalIgnoreCase))
                     {
                         sistemaActual = candidato;
                         break;
@@ -103,51 +122,46 @@ namespace Proyecto2Drones.Models
                 if (sistemaActual == null) continue;
 
                 int n = sistemaActual.DronesConfigurados.GetConteo();
-
-                Dictionary<string, int> droneIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-                for (int d = 0; d < n; d++)
-                    droneIndex[sistemaActual.DronesConfigurados.Obtener(d).NombreDron.Trim()] = d;
-
                 int[] currentHeight = new int[n];   
-                int[] droneFreeAt   = new int[n];   
+                int[] droneFreeAt = new int[n];   
                 for (int i = 0; i < n; i++) droneFreeAt[i] = 1;
 
                 int lastGlobalEmit = 0;
-
                 int totalInstrucciones = msj.Instrucciones.GetConteo();
 
-                int[]    instrDroneIdx   = new int[totalInstrucciones];
-                int[]    instrTargetH    = new int[totalInstrucciones];
-                int[]    instrMoveStart  = new int[totalInstrucciones];
-                int[]    instrEmitTime   = new int[totalInstrucciones];
-                int[]    instrPrevHeight = new int[totalInstrucciones];
-                string[] instrLetras     = new string[totalInstrucciones];
+                int[] instrDroneIdx = new int[totalInstrucciones];
+                int[] instrTargetH = new int[totalInstrucciones];
+                int[] instrMoveStart = new int[totalInstrucciones];
+                int[] instrEmitTime = new int[totalInstrucciones];
+                int[] instrPrevHeight = new int[totalInstrucciones];
+                string[] instrLetras = new string[totalInstrucciones];
 
+                // Simulación de Tiempos
                 for (int i = 0; i < totalInstrucciones; i++)
                 {
                     InstruccionDirecta inst = msj.Instrucciones.Obtener(i);
                     string dronNombre = inst.NombreDron.Trim();
 
-                    if (!droneIndex.ContainsKey(dronNombre))
+                    int d = BuscarIndiceDron(sistemaActual, dronNombre);
+                    if (d == -1)
                     {
-                        instrDroneIdx[i]   = -1;
-                        instrLetras[i]     = "?";
+                        instrDroneIdx[i] = -1;
+                        instrLetras[i] = "?";
                         continue;
                     }
 
-                    int d      = droneIndex[dronNombre];
                     int target = inst.AlturaDestino;
-                    int prevH  = currentHeight[d];
+                    int prevH = currentHeight[d];
                     int travel = Math.Abs(prevH - target);
 
-                    int moveStart    = droneFreeAt[d];
+                    int moveStart = droneFreeAt[d];
                     int earliestEmit = moveStart + travel;
-                    int emitTime     = Math.Max(earliestEmit, lastGlobalEmit + 1);
+                    int emitTime = Math.Max(earliestEmit, lastGlobalEmit + 1);
 
-                    instrDroneIdx[i]   = d;
-                    instrTargetH[i]    = target;
-                    instrMoveStart[i]  = moveStart;
-                    instrEmitTime[i]   = emitTime;
+                    instrDroneIdx[i] = d;
+                    instrTargetH[i] = target;
+                    instrMoveStart[i] = moveStart;
+                    instrEmitTime[i] = emitTime;
                     instrPrevHeight[i] = prevH;
 
                     ConfiguracionDron config = sistemaActual.DronesConfigurados.Obtener(d);
@@ -159,56 +173,40 @@ namespace Proyecto2Drones.Models
                     }
 
                     currentHeight[d] = target;
-                    droneFreeAt[d]   = emitTime + 1;
-                    lastGlobalEmit   = emitTime;
+                    droneFreeAt[d] = emitTime + 1;
+                    lastGlobalEmit = emitTime;
                 }
 
                 int tiempoOptimo = lastGlobalEmit;
 
-
-                Dictionary<int, string>[] droneActions = new Dictionary<int, string>[n];
+                string[,] matrizAcciones = new string[n, tiempoOptimo + 1];
                 for (int d = 0; d < n; d++)
-                    droneActions[d] = new Dictionary<int, string>();
+                    for (int t = 0; t <= tiempoOptimo; t++)
+                        matrizAcciones[d, t] = "Esperar";
 
                 for (int i = 0; i < totalInstrucciones; i++)
                 {
                     int d = instrDroneIdx[i];
-                    if (d < 0) continue; 
+                    if (d < 0) continue;
 
-                    int target    = instrTargetH[i];
-                    int prevH     = instrPrevHeight[i];
+                    int target = instrTargetH[i];
+                    int prevH = instrPrevHeight[i];
                     int moveStart = instrMoveStart[i];
-                    int emitTime  = instrEmitTime[i];
-                    int travel    = Math.Abs(prevH - target);
+                    int emitTime = instrEmitTime[i];
+                    int travel = Math.Abs(prevH - target);
                     int direction = (target > prevH) ? 1 : (target < prevH ? -1 : 0);
 
                     for (int t = moveStart; t < moveStart + travel; t++)
-                    {
-                        string accion = (direction > 0) ? "Subir" : "Bajar";
-                        if (!droneActions[d].ContainsKey(t))
-                            droneActions[d][t] = accion;
-                    }
+                        matrizAcciones[d, t] = (direction > 0) ? "Subir" : "Bajar";
 
-                    for (int t = moveStart + travel; t < emitTime; t++)
-                    {
-                        if (!droneActions[d].ContainsKey(t))
-                            droneActions[d][t] = "Esperar";
-                    }
-
-                    if (!droneActions[d].ContainsKey(emitTime))
-                        droneActions[d][emitTime] = "Emitir Luz";
+                    matrizAcciones[d, emitTime] = "Emitir Luz";
                 }
 
-                for (int t = 1; t <= tiempoOptimo; t++)
-                    for (int d = 0; d < n; d++)
-                        if (!droneActions[d].ContainsKey(t))
-                            droneActions[d][t] = "Esperar";
-
                 RespuestaMensaje r = new RespuestaMensaje(msj.Nombre);
-                r.NombreSistema  = msj.SistemaDrones;
-                r.TiempoOptimo   = tiempoOptimo;
+                r.NombreSistema = msj.SistemaDrones;
+                r.TiempoOptimo = tiempoOptimo;
 
-                System.Text.StringBuilder sbMensaje = new System.Text.StringBuilder();
+                StringBuilder sbMensaje = new StringBuilder();
                 for (int i = 0; i < totalInstrucciones; i++)
                     sbMensaje.Append(instrLetras[i]);
                 r.MensajeDecoded = sbMensaje.ToString();
@@ -219,56 +217,64 @@ namespace Proyecto2Drones.Models
                     for (int d = 0; d < n; d++)
                     {
                         string nombreDron = sistemaActual.DronesConfigurados.Obtener(d).NombreDron;
-                        string accion     = droneActions[d].ContainsKey(t) ? droneActions[d][t] : "Esperar";
-                        paso.Movimientos.Agregar(new InstruccionDron(nombreDron, accion));
+                        paso.Movimientos.Agregar(new InstruccionDron(nombreDron, matrizAcciones[d, t]));
                     }
                     r.Pasos.Agregar(paso);
                 }
-
                 listaResultados.Agregar(r);
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Genera el XML de salida 
-        // ─────────────────────────────────────────────────────────────────────
-        public string GenerarXmlSalida()
+        public string GenerarGrafoSistemas()
         {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            sb.AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-            sb.AppendLine("<respuesta>");
-            sb.AppendLine("  <listaMensajes>");
+            if (listaSistemasDrones == null || listaSistemasDrones.GetConteo() == 0) return "";
+            StringBuilder dot = new StringBuilder();
+            dot.Append("digraph G { rankdir=LR; node [shape=box, style=filled, color=lightblue]; ");
+            dot.Append("Raiz [label=\"Sistemas Cargados\", shape=ellipse, color=orange]; ");
 
-            for (int i = 0; i < listaResultados.GetConteo(); i++)
+            for (int i = 0; i < listaSistemasDrones.GetConteo(); i++)
             {
-                RespuestaMensaje rm = listaResultados.Obtener(i);
-                sb.AppendLine($"    <mensaje nombre=\"{rm.NombreMensaje}\">");
-                sb.AppendLine($"      <sistemaDrones>{rm.NombreSistema}</sistemaDrones>");
-                sb.AppendLine($"      <tiempoOptimo>{rm.TiempoOptimo}</tiempoOptimo>");
-                sb.AppendLine($"      <mensajeRecibido>{rm.MensajeDecoded}</mensajeRecibido>");
-                sb.AppendLine("      <instrucciones>");
-
-                for (int p = 0; p < rm.Pasos.GetConteo(); p++)
-                {
-                    PasoTiempo paso = rm.Pasos.Obtener(p);
-                    sb.AppendLine($"        <tiempo valor=\"{paso.Segundo}\">");
-                    sb.AppendLine("          <acciones>");
-                    for (int m = 0; m < paso.Movimientos.GetConteo(); m++)
-                    {
-                        InstruccionDron mov = paso.Movimientos.Obtener(m);
-                        sb.AppendLine($"            <dron nombre=\"{mov.NombreDron}\">{mov.Accion}</dron>");
-                    }
-                    sb.AppendLine("          </acciones>");
-                    sb.AppendLine("        </tiempo>");
-                }
-
-                sb.AppendLine("      </instrucciones>");
-                sb.AppendLine("    </mensaje>");
+                var sistema = listaSistemasDrones.Obtener(i);
+                dot.Append($"Raiz -> \"{sistema.Nombre}\"; ");
+                dot.Append($"\"{sistema.Nombre}\" [label=\"{sistema.Nombre}\\nAltura Máx: {sistema.AlturaMaxima}m\"]; ");
             }
+            dot.Append(" }");
+            return $"https://quickchart.io/graphviz?graph={Uri.EscapeDataString(dot.ToString())}";
+        }
 
-            sb.AppendLine("  </listaMensajes>");
-            sb.AppendLine("</respuesta>");
-            return sb.ToString();
+        public string GenerarGrafoInstrucciones(string nombreMensaje)
+        {
+            RespuestaMensaje res = null;
+            for (int i = 0; i < listaResultados.GetConteo(); i++) {
+                if (listaResultados.Obtener(i).NombreMensaje == nombreMensaje) {
+                    res = listaResultados.Obtener(i);
+                    break;
+                }
+            }
+            if (res == null) return "";
+
+            StringBuilder dot = new StringBuilder();
+            dot.Append("digraph G { node [shape=record, fontname=\"Arial\"]; ");
+            dot.Append($"Header [label=\"{{MENSAJE: {res.NombreMensaje} | TIEMPO TOTAL: {res.TiempoOptimo}s}}\", style=filled, color=gold]; ");
+            string ultimoNodo = "Header";
+
+            for (int j = 0; j < res.Pasos.GetConteo(); j++)
+            {
+                var paso = res.Pasos.Obtener(j);
+                string idNodo = $"Paso{j}";
+                string label = $"{{ Segundo: {paso.Segundo} | {{ ";
+                for (int k = 0; k < paso.Movimientos.GetConteo(); k++)
+                {
+                    var mov = paso.Movimientos.Obtener(k);
+                    label += $"{mov.NombreDron}: {mov.Accion}";
+                    if (k < paso.Movimientos.GetConteo() - 1) label += " | ";
+                }
+                label += " }} }}";
+                dot.Append($"{idNodo} [label=\"{label}\"]; {ultimoNodo} -> {idNodo}; ");
+                ultimoNodo = idNodo;
+            }
+            dot.Append("}");
+            return $"https://quickchart.io/graphviz?graph={Uri.EscapeDataString(dot.ToString())}";
         }
     }
 }

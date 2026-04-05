@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<config>
+
+    <listaDrones>
+        <dron>DronRojo</dron>
+        <dron>DronAzul</dron>
+        <dron>DronVerde</dron>
+    </listaDrones>
+
+    <listaSistemasDrones>
+        <sistemaDrones nombre="SistemaComida">
+        <alturaMaxima>4</alturaMaxima>
+        <cantidadDrones>3</cantidadDrones>
+        <contenido>
+            <dron>DronRojo</dron>
+            <alturas>
+            <altura valor="1">A</altura>
+            <altura valor="2">E</altura>
+            <altura valor="3">S</altura>
+            <altura valor="4">O</altura>
+            </alturas>
+        </contenido>
+        <contenido>
+            <dron>DronAzul</dron>
+            <alturas>
+            <altura valor="1">B</altura>
+            <altura valor="2">O</altura>
+            <altura valor="3">P</altura>
+            <altura valor="4">N</altura>
+            </alturas>
+        </contenido>
+        <contenido>
+            <dron>DronVerde</dron>
+            <alturas>
+            <altura valor="1">C</altura>
+            <altura valor="2">D</altura>
+            <altura valor="3">U</altura>
+            <altura valor="4">A</altura>
+            </alturas>
+        </contenido>
+        </sistemaDrones>
+    </listaSistemasDrones>
+
+    <listaMensajes>
+        <Mensaje nombre="MensajeSopa">
+        <sistemaDrones>SistemaComida</sistemaDrones>
+        <instrucciones>
+            <instruccion dron="DronRojo">3</instruccion>
+            <instruccion dron="DronAzul">2</instruccion>
+            <instruccion dron="DronAzul">3</instruccion>
+            <instruccion dron="DronVerde">4</instruccion>
+        </instrucciones>
+        </Mensaje>
+    </listaMensajes>
+
+</config>
