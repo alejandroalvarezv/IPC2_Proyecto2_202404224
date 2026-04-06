@@ -84,6 +84,7 @@ namespace Proyecto2Drones.Models
                     listaMensajesAProcesar.Insertar(nuevoMsj);
                 }
 
+                listaMensajesAProcesar.Ordenar();
                 listaDronesGlobal.OrdenarDrones();
 
                 for (int i = 0; i < listaSistemasDrones.GetConteo(); i++)
@@ -122,84 +123,86 @@ namespace Proyecto2Drones.Models
                 if (sistemaActual == null) continue;
 
                 int n = sistemaActual.DronesConfigurados.GetConteo();
-                int[] currentHeight = new int[n];   
-                int[] droneFreeAt = new int[n];   
-                for (int i = 0; i < n; i++) droneFreeAt[i] = 1;
-
-                int lastGlobalEmit = 0;
                 int totalInstrucciones = msj.Instrucciones.GetConteo();
 
-                int[] instrDroneIdx = new int[totalInstrucciones];
-                int[] instrTargetH = new int[totalInstrucciones];
-                int[] instrMoveStart = new int[totalInstrucciones];
-                int[] instrEmitTime = new int[totalInstrucciones];
-                int[] instrPrevHeight = new int[totalInstrucciones];
-                string[] instrLetras = new string[totalInstrucciones];
+                // TDA propio: estado de cada dron (reemplaza int[] currentHeight y int[] droneFreeAt)
+                ListaEnlazada<EstadoDron> estadosDrones = new ListaEnlazada<EstadoDron>();
+                for (int i = 0; i < n; i++)
+                    estadosDrones.Agregar(new EstadoDron());
+
+                int lastGlobalEmit = 0;
+
+                // TDA propio: datos calculados por instrucción (reemplaza los 5 int[] y el string[])
+                ListaEnlazada<DatosInstruccion> datosInstrucciones = new ListaEnlazada<DatosInstruccion>();
 
                 // Simulación de Tiempos
                 for (int i = 0; i < totalInstrucciones; i++)
                 {
                     InstruccionDirecta inst = msj.Instrucciones.Obtener(i);
                     string dronNombre = inst.NombreDron.Trim();
-
                     int d = BuscarIndiceDron(sistemaActual, dronNombre);
+
+                    DatosInstruccion datos = new DatosInstruccion();
+
                     if (d == -1)
                     {
-                        instrDroneIdx[i] = -1;
-                        instrLetras[i] = "?";
+                        datos.IndiceDron = -1;
+                        datos.Letra = "?";
+                        datosInstrucciones.Agregar(datos);
                         continue;
                     }
 
+                    EstadoDron estado = estadosDrones.Obtener(d);
                     int target = inst.AlturaDestino;
-                    int prevH = currentHeight[d];
+                    int prevH = estado.AlturaActual;
                     int travel = Math.Abs(prevH - target);
 
-                    int moveStart = droneFreeAt[d];
+                    int moveStart = estado.LibreEn;
                     int earliestEmit = moveStart + travel;
                     int emitTime = Math.Max(earliestEmit, lastGlobalEmit + 1);
 
-                    instrDroneIdx[i] = d;
-                    instrTargetH[i] = target;
-                    instrMoveStart[i] = moveStart;
-                    instrEmitTime[i] = emitTime;
-                    instrPrevHeight[i] = prevH;
+                    datos.IndiceDron = d;
+                    datos.AlturaDestino = target;
+                    datos.InicioMovimiento = moveStart;
+                    datos.TiempoEmision = emitTime;
+                    datos.AlturaAnterior = prevH;
 
                     ConfiguracionDron config = sistemaActual.DronesConfigurados.Obtener(d);
-                    instrLetras[i] = "?";
+                    datos.Letra = "?";
                     for (int h = 0; h < config.ListadoAlturas.GetConteo(); h++)
                     {
                         ContenidoAltura ca = config.ListadoAlturas.Obtener(h);
-                        if (ca.ValorAltura == target) { instrLetras[i] = ca.Letra; break; }
+                        if (ca.ValorAltura == target) { datos.Letra = ca.Letra; break; }
                     }
 
-                    currentHeight[d] = target;
-                    droneFreeAt[d] = emitTime + 1;
+                    estado.AlturaActual = target;
+                    estado.LibreEn = emitTime + 1;
                     lastGlobalEmit = emitTime;
+                    datosInstrucciones.Agregar(datos);
                 }
 
                 int tiempoOptimo = lastGlobalEmit;
 
-                string[,] matrizAcciones = new string[n, tiempoOptimo + 1];
-                for (int d = 0; d < n; d++)
-                    for (int t = 0; t <= tiempoOptimo; t++)
-                        matrizAcciones[d, t] = "Esperar";
+                // TDA propio: MatrizAcciones (reemplaza string[,])
+                MatrizAcciones matrizAcciones = new MatrizAcciones(n, tiempoOptimo);
 
                 for (int i = 0; i < totalInstrucciones; i++)
                 {
-                    int d = instrDroneIdx[i];
+                    DatosInstruccion datos = datosInstrucciones.Obtener(i);
+                    int d = datos.IndiceDron;
                     if (d < 0) continue;
 
-                    int target = instrTargetH[i];
-                    int prevH = instrPrevHeight[i];
-                    int moveStart = instrMoveStart[i];
-                    int emitTime = instrEmitTime[i];
+                    int target = datos.AlturaDestino;
+                    int prevH = datos.AlturaAnterior;
+                    int moveStart = datos.InicioMovimiento;
+                    int emitTime = datos.TiempoEmision;
                     int travel = Math.Abs(prevH - target);
                     int direction = (target > prevH) ? 1 : (target < prevH ? -1 : 0);
 
                     for (int t = moveStart; t < moveStart + travel; t++)
-                        matrizAcciones[d, t] = (direction > 0) ? "Subir" : "Bajar";
+                        matrizAcciones.Establecer(d, t, (direction > 0) ? "Subir" : "Bajar");
 
-                    matrizAcciones[d, emitTime] = "Emitir Luz";
+                    matrizAcciones.Establecer(d, emitTime, "Emitir Luz");
                 }
 
                 RespuestaMensaje r = new RespuestaMensaje(msj.Nombre);
@@ -208,7 +211,7 @@ namespace Proyecto2Drones.Models
 
                 StringBuilder sbMensaje = new StringBuilder();
                 for (int i = 0; i < totalInstrucciones; i++)
-                    sbMensaje.Append(instrLetras[i]);
+                    sbMensaje.Append(datosInstrucciones.Obtener(i).Letra);
                 r.MensajeDecoded = sbMensaje.ToString();
 
                 for (int t = 1; t <= tiempoOptimo; t++)
@@ -217,7 +220,7 @@ namespace Proyecto2Drones.Models
                     for (int d = 0; d < n; d++)
                     {
                         string nombreDron = sistemaActual.DronesConfigurados.Obtener(d).NombreDron;
-                        paso.Movimientos.Agregar(new InstruccionDron(nombreDron, matrizAcciones[d, t]));
+                        paso.Movimientos.Agregar(new InstruccionDron(nombreDron, matrizAcciones.Obtener(d, t)));
                     }
                     r.Pasos.Agregar(paso);
                 }

@@ -45,6 +45,18 @@ namespace Proyecto2Drones.Models
             return actual.Dato;
         }
 
+        public void Establecer(int indice, T valor)
+        {
+            if (indice < 0 || indice >= conteo || primero == null) return;
+            Nodo<T> actual = primero;
+            for (int i = 0; i < indice; i++)
+            {
+                if (actual.Siguiente == null) break;
+                actual = actual.Siguiente;
+            }
+            actual.Dato = valor;
+        }
+
         public void OrdenarDrones()
 {
     if (conteo < 2 || primero == null) return;
